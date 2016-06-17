@@ -5,10 +5,12 @@ before_action :admin_user, only: :destroy
 
   def index
     @users = User.paginate(page: params[:page])
+
   end
 
   def show
     @user = User.find(params[:id])
+    @microposts = @user.microposts.paginate(page: params[:page])
   end
 
   def new
@@ -24,7 +26,7 @@ before_action :admin_user, only: :destroy
      else
        render 'new'
      end
-   end
+  end
 
    def edit
      @user = User.find(params[:id])
@@ -46,6 +48,12 @@ before_action :admin_user, only: :destroy
      redirect_to users_url
    end
 
+   # Defines a proto-feed.
+  # See "Following users" for the full implementation.
+  def feed
+      Micropost.where("user_id = ?", id)
+  end
+
    private
 
      def user_params
@@ -55,14 +63,6 @@ before_action :admin_user, only: :destroy
 
      #Before filters
 
-     #Confirms a logged-in user.
-     def logged_in_user
-       unless logged_in?
-         store_location
-         flash[:danger] = "Please log in."
-         redirect_to login_url
-       end
-     end
 
      #Confrims the correct user
      def correct_user
@@ -74,4 +74,4 @@ before_action :admin_user, only: :destroy
      def admin_user
        redirect_to(root_url) unless current_user.admin?
      end
- end
+end
